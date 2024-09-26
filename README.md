@@ -35,7 +35,7 @@ then
     }
 end
 
-// Rule to validate if depositor's age is over 18
+// Rule to validate if the epositors age is over 18
 rule "Validate Depositor Age Over 18"
 when
     $depositor: Depositor(depositorIdentificationPP != null)
