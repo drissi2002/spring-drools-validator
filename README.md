@@ -97,3 +97,6 @@ function boolean isCardExpired(String expiryDateStr) {
 }
 
 ```
+## Overview of how the Drools rules file is stored in the database
+![image](https://github.com/user-attachments/assets/34dcc7ef-8d64-4cfa-86b6-5014c6413516)
+
