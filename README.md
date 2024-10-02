@@ -4,9 +4,12 @@ The primary goal of this application is to validate depositors against a set of 
 
 ## Drools rules file stored in the database for dynamic rule management and validation
 ```bash
-package com.wevioo.validator;
 
 import com.wevioo.validator.domain.entity.depositor.Depositor;
+import java.util.ArrayList;
+import java.util.List;
+global java.util.List countries;
+global java.util.List currencies;
 import com.wevioo.validator.domain.entity.result.DepositorValidationResult;
 import com.wevioo.validator.domain.entity.depositor.AccountsIdentification;
 import com.wevioo.validator.domain.entity.depositor.Account;
@@ -95,6 +98,40 @@ function boolean isCardExpired(String expiryDateStr) {
     java.time.YearMonth today = java.time.YearMonth.now();
     return expiry.isBefore(today);
 }
+
+// Rule to validate if the currency exists in the list of valid currencies
+rule "Validate Currency Exists"
+when
+    $depositor: Depositor(accountsIdentification != null) // Ensure accountsIdentification is not null
+then
+    // Initialize currency to null before checks
+    String currency = null;
+
+    // Check if accountsIdentification and account are not null before getting the currency
+    if ($depositor.getAccountsIdentification() != null && 
+        $depositor.getAccountsIdentification().getAccount() != null) {
+        currency = $depositor.getAccountsIdentification().getAccount().getCurrency();
+    }
+
+    // Proceed to validate currency only if it was successfully retrieved
+    if (currency != null && !currencies.contains(currency)) {
+        validationResult.addError("currency", "Invalid currency for dpoId: " + $depositor.getDpoId() + ". Currency: " + currency + " does not exist.");
+    } else if (currency == null) {
+        // Handle the case where currency is null
+        validationResult.addError("currency", "Currency is null for dpoId: " + $depositor.getDpoId() + ".");
+    }
+end
+
+// Rule to validate if the country exists in the list of valid countries
+rule "Validate Country Exists"
+when
+    $depositor: Depositor(contactDetails != null)
+then
+    String country = $depositor.getContactDetails().getCountry();
+    if (!countries.contains(country)) {
+        validationResult.addError("country", "Invalid country for dpoId: " + $depositor.getDpoId() + ". Country: " + country + " does not exist.");
+    }
+end
 
 ```
 ## Overview of how the Drools rules file is stored in the database
