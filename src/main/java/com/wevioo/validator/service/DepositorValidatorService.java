@@ -16,9 +16,8 @@ public class DepositorValidatorService {
 
     @Autowired
     private KieContainer kieContainer;
-
     @Autowired
-    private DroolsEngineService droolsEngineService;
+    private CachingService cachingService;
 
     // Method to validate a list of depositors
     public List<DepositorValidationResult> validateDepositors(List<Depositor> depositors) {
@@ -29,6 +28,14 @@ public class DepositorValidatorService {
         // KieSession kieSession = droolsEngineService.createKieSessionFromRules();
 
         KieSession kieSession =  kieContainer.newKieSession();
+
+        // Fetch lists from services
+        List<String> countries = cachingService.getCountries();  // Returns List of country codes/names
+        List<String> currencies = cachingService.getCurrencies();  // Returns List of currency codes
+
+        // Inject the lists as global variables
+        kieSession.setGlobal("countries", countries);
+        kieSession.setGlobal("currencies", currencies);
 
         try {
             for (Depositor depositor : depositors) {
@@ -54,7 +61,6 @@ public class DepositorValidatorService {
                 kieSession.dispose();
             }
         }
-
         return results;  // Return the list of validation results
     }
 
